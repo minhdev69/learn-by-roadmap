@@ -1,0 +1,48 @@
+name: "AI Assistant - Auto Create Pull Request"
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch_name:
+        description: "Tên nhánh tính năng mới (Branch)"
+        required: true
+        default: "feature/ai-upgrade"
+      pr_title:
+        description: "Tiêu đề Pull Request"
+        required: true
+        default: "feat: AI code upgrade for THPT D01 & BCA CA4 Roadmap"
+      app_jsx_url_or_base64:
+        description: "Chuỗi Base64 của bản cập nhật (do Gemini xuất ra)"
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  create-pull-request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create feature branch & apply AI code update
+        run: |
+          git config user.name "gemini-ai-bot"
+          git config user.email "gemini-bot@users.noreply.github.com"
+          git checkout -b "${{ github.event.inputs.branch_name }}-${{ github.run_number }}"
+          echo "${{ github.event.inputs.app_jsx_url_or_base64 }}" | base64 -d > update.patch
+          git apply --whitespace=nowarn update.patch
+          rm -f update.patch
+          git add .
+          git commit -m "${{ github.event.inputs.pr_title }}"
+          git push -u origin HEAD
+
+      - name: Open Pull Request for Owner Approval
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --title "${{ github.event.inputs.pr_title }}" \
+            --body "Pull Request tự động được tạo từ bản nâng cấp của Gemini. Vui lòng kiểm tra (Files changed) và bấm **Merge Pull Request** nếu bạn đồng ý." \
+            --base main
