@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes floating-point {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-40px) scale(1.2); }
+}
+
+.animate-floating {
+  animation: floating-point 1s ease-out forwards;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 10px 0px rgba(16, 185, 129, 0.2); }
+  50% { box-shadow: 0 0 20px 5px rgba(16, 185, 129, 0.6); }
+}
+
+.glow-effect {
+  animation: pulse-glow 2s infinite;
+}
